@@ -1,1 +1,1 @@
-include ':app', ':demo', ':nfc', ':usbdevice', ':lotuscarddemo', ':usbkeyevent'
+include ':app', ':demo', ':nfc', ':usbdevice', ':lotuscarddemo', ':usbkeyevent', ':utusbreader'

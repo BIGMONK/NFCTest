@@ -9,6 +9,7 @@
       <module fileurl="file://$PROJECT_DIR$/nfc/nfc.iml" filepath="$PROJECT_DIR$/nfc/nfc.iml" />
       <module fileurl="file://$PROJECT_DIR$/usbdevice/usbdevice.iml" filepath="$PROJECT_DIR$/usbdevice/usbdevice.iml" />
       <module fileurl="file://$PROJECT_DIR$/usbkeyevent/usbkeyevent.iml" filepath="$PROJECT_DIR$/usbkeyevent/usbkeyevent.iml" />
+      <module fileurl="file://$PROJECT_DIR$/utusbreader/utusbreader.iml" filepath="$PROJECT_DIR$/utusbreader/utusbreader.iml" />
     </modules>
   </component>
 </project>

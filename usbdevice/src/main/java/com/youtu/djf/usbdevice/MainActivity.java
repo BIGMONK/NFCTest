@@ -14,40 +14,55 @@ import android.hardware.usb.UsbRequest;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.KeyEvent;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     private static final String TAG = "MainActivity";
     private PendingIntent mPermissionIntent;
     public static final String ACTION_DEVICE_PERMISSION = "com.youtu.djf.usbdevice.USB_PERMISSION";
     private UsbManager manager;
     private Thread mThread;
     private TextView tv_id;
+    private Button bt_id, bt_id2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        Log.e(TAG, "onCreate:-------------------------------- " + this.toString());
+
+        if (!isTaskRoot()) {
+            finish();
+            return;
+        }
         initView();
-        Log.e(TAG, "onCreate:-------------------------------- ");
+
+
+//        startUSBReader();
+
+    }
+
+    private void startUSBReader() {
         IntentFilter usbFilter = new IntentFilter();
         usbFilter.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED);
         usbFilter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
+        mUsbReceiver = new UsbBroadcastReceiver();
         registerReceiver(mUsbReceiver, usbFilter);
-
         mPermissionIntent = PendingIntent.getBroadcast(this, 0, new Intent
                 (ACTION_DEVICE_PERMISSION), 0);
         IntentFilter permissionFilter = new IntentFilter(ACTION_DEVICE_PERMISSION);
+        mUsbPermissionReceiver = new UsbPermissionBroadcastReceiver();
         registerReceiver(mUsbPermissionReceiver, permissionFilter);
         manager = (UsbManager) getSystemService(Context.USB_SERVICE);
 
         getDevice(manager);
-
     }
 
     /**
@@ -76,6 +91,11 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * 获取设备接口
+     *
+     * @param mUsbDevice
+     */
     private void getUsbInterface(UsbDevice mUsbDevice) {
         Log.e(TAG, "getUsbInterface:++++++++++++++++++++++++++++++++++++++ ");
         Log.e(TAG, "getUsbInterface: 获取设备数据接口：设备" + mUsbDevice.toString());
@@ -135,12 +155,14 @@ public class MainActivity extends AppCompatActivity {
                                         }
                                         sb.append(40);
                                         Log.e(TAG, "readFromUsb: 收到数据：" + sb.toString() + "   " +
-                                                "长度：" + (ids.size()+1)
-                                                + "  格式化：" + sb2.toString());
+                                                "长度：" + (ids.size() + 1)
+                                                + "  格式化：" + sb2.toString() + "   长度：" +
+                                                sb2.toString().length());
                                         runOnUiThread(new Runnable() {
                                             @Override
                                             public void run() {
-                                                tv_id.setText("卡片原始数据:"+ sb.toString()+"  格式化后ID："+sb2.toString());
+                                                tv_id.setText("卡片原始数据:" + sb.toString() + "  " +
+                                                        "格式化后ID：" + sb2.toString());
 
                                             }
                                         });
@@ -166,12 +188,15 @@ public class MainActivity extends AppCompatActivity {
         mThread.start();
     }
 
-
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        unregisterReceiver(mUsbReceiver);
-        unregisterReceiver(mUsbPermissionReceiver);
+        Log.e(TAG, "onDestroy: --------------------------------" + this.toString() + "  " +
+                getIntent().toString());
+        if (mUsbReceiver != null)
+            unregisterReceiver(mUsbReceiver);
+        if (mUsbPermissionReceiver != null)
+            unregisterReceiver(mUsbPermissionReceiver);
         if (mThread != null && mThread.isAlive()) {
             mThread.stop();
         }
@@ -180,7 +205,21 @@ public class MainActivity extends AppCompatActivity {
     /**
      * usb设备插拔广播
      */
-    private final BroadcastReceiver mUsbReceiver = new BroadcastReceiver() {
+    private UsbBroadcastReceiver mUsbReceiver;
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.bt_id:
+                startActivity(new Intent(this, Main3Activity.class));
+                break;
+            case R.id.bt_id2:
+                startActivity(new Intent(this, Main4Activity.class));
+                break;
+        }
+    }
+
+    private class UsbBroadcastReceiver extends BroadcastReceiver {
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
             UsbDevice device = intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
@@ -194,22 +233,27 @@ public class MainActivity extends AppCompatActivity {
                 Log.e(TAG, "onReceive:ACTION_USB_DEVICE_DETACHED\n");
                 if (device != null) {
                     Log.e(TAG, "onReceive: 设备移除" + device.toString());
+                    if (mThread != null && mThread.isAlive()) {
+                        mThread.stop();
+                    }
                 }
             }
         }
-    };
+    }
+
+    ;
     /**
      * 权限申请广播
      */
-    private final BroadcastReceiver mUsbPermissionReceiver = new BroadcastReceiver() {
+    private UsbPermissionBroadcastReceiver mUsbPermissionReceiver;
+
+    private class UsbPermissionBroadcastReceiver extends BroadcastReceiver {
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
             if (ACTION_DEVICE_PERMISSION.equals(action)) {
                 synchronized (this) {
                     UsbDevice device = intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
                     if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
-//                        Log.e(TAG, "onReceive: usb EXTRA_PERMISSION_GRANTED 获取权限成功"+device
-// .toString());
                         if (device != null && device.getProductId() == 24 && device.getVendorId()
                                 == 5050) {
                             Log.e(TAG, "onReceive: usb EXTRA_PERMISSION_GRANTED 获取权限成功" + device
@@ -222,9 +266,15 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         }
-    };
+    }
+
+    ;
 
     private void initView() {
         tv_id = (TextView) findViewById(R.id.tv_id);
+        bt_id = (Button) findViewById(R.id.bt_id);
+        bt_id.setOnClickListener(this);
+        bt_id2 = (Button) findViewById(R.id.bt_id2);
+        bt_id2.setOnClickListener(this);
     }
 }

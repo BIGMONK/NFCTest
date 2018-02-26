@@ -2,16 +2,14 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="com.youtu.djf.usbdevice">
 
-    <uses-feature
-        android:name="android.hardware.usb.accessory"/>
-
+    <uses-feature android:name="android.hardware.usb.accessory"/>
     <uses-feature
         android:name="android.hardware.usb.host"
         android:required="true"/>
 
     <uses-permiassion android:name="android.hardware.usb.host"/>
-    <uses-permission android:name="android.hardware.usb.accessory"/>
 
+    <uses-permission android:name="android.hardware.usb.accessory"/>
     <uses-permission android:name="android.permission.ACCESS_SUPERUSER"/>
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
 
@@ -22,16 +20,15 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity android:name=".MainActivity">
-
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
-
             <intent-filter>
                 <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED"/>
             </intent-filter>
+
             <meta-data
                 android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED"
                 android:resource="@xml/host_filter"/>
@@ -42,6 +39,24 @@
             <!-- android:name="android.hardware.usb.action.USB_ACCESSORY_ATTACHED" -->
             <!-- android:resource="@xml/accessory_filter"/> -->
 
+        </activity>
+
+        <service
+            android:name=".USBReaderService"
+            android:enabled="true"
+            android:exported="true">
+        </service>
+
+        <activity android:name=".Main3Activity">
+        </activity>
+
+        <service
+            android:name=".MyService"
+            android:enabled="true"
+            android:exported="true">
+        </service>
+
+        <activity android:name=".Main4Activity">
         </activity>
     </application>
 

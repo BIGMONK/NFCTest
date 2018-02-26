@@ -14,6 +14,7 @@
             <option value="$PROJECT_DIR$/nfc" />
             <option value="$PROJECT_DIR$/usbdevice" />
             <option value="$PROJECT_DIR$/usbkeyevent" />
+            <option value="$PROJECT_DIR$/utusbreader" />
           </set>
         </option>
         <option name="resolveModulePerSourceSet" value="false" />
