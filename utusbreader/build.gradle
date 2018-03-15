@@ -21,6 +21,14 @@ android {
     }
 }
 
+task makeAar(type: Copy) {
+    delete 'build/libs/utusbreader-debug.aar'
+    from('build/outputs/aar/utusbreader-release.aar')
+    into('build/libs/')
+    include('utusbreader-release.aar')
+    rename('utusbreader-release.aar', 'utusbreader.aar')
+}
+makeAar.dependsOn(true)
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {

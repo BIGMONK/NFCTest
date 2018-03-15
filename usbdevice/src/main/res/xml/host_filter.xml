@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-     <!--光猪圈读卡器-->
-     <usb-device vendor-id="5050" product-id="24" class="0" subclass="0" protocol="0"/>
-</resources>

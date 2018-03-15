@@ -25,6 +25,7 @@
 
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
+
             <intent-filter>
                 <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED"/>
             </intent-filter>
@@ -41,20 +42,8 @@
 
         </activity>
 
-        <service
-            android:name=".USBReaderService"
-            android:enabled="true"
-            android:exported="true">
-        </service>
-
         <activity android:name=".Main3Activity">
         </activity>
-
-        <service
-            android:name=".MyService"
-            android:enabled="true"
-            android:exported="true">
-        </service>
 
         <activity android:name=".Main4Activity">
         </activity>

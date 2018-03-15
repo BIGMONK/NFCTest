@@ -5,7 +5,6 @@
       <module fileurl="file://$PROJECT_DIR$/NFCTest.iml" filepath="$PROJECT_DIR$/NFCTest.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
       <module fileurl="file://$PROJECT_DIR$/demo/demo.iml" filepath="$PROJECT_DIR$/demo/demo.iml" />
-      <module fileurl="file://$PROJECT_DIR$/lotuscarddemo/lotuscarddemo.iml" filepath="$PROJECT_DIR$/lotuscarddemo/lotuscarddemo.iml" />
       <module fileurl="file://$PROJECT_DIR$/nfc/nfc.iml" filepath="$PROJECT_DIR$/nfc/nfc.iml" />
       <module fileurl="file://$PROJECT_DIR$/usbdevice/usbdevice.iml" filepath="$PROJECT_DIR$/usbdevice/usbdevice.iml" />
       <module fileurl="file://$PROJECT_DIR$/usbkeyevent/usbkeyevent.iml" filepath="$PROJECT_DIR$/usbkeyevent/usbkeyevent.iml" />

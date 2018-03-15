@@ -21,6 +21,8 @@ import android.util.Log;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class USBReaderService extends Service {
 
@@ -28,14 +30,14 @@ public class USBReaderService extends Service {
     private PendingIntent mPermissionIntent;
     public static final String ACTION_DEVICE_PERMISSION = "com.youtu.djf.usbdevice.USB_PERMISSION";
     private UsbManager manager;
-    private Thread mThread;
-
+    private Thread thread;
 
     public USBReaderService() {
     }
 
     private static ServiceConnection con;
-    private  static Context mcontext;
+    private static Context mcontext;
+    private static boolean stopReading;
 
     public static void bindService(Context context, final ServiceListener listener) {
         mcontext = context;
@@ -46,6 +48,7 @@ public class USBReaderService extends Service {
              */
             @Override
             public void onServiceDisconnected(ComponentName name) {
+                Log.d(TAG, "onServiceDisconnected: ");
             }
 
             /**
@@ -61,25 +64,32 @@ public class USBReaderService extends Service {
                 }
             }
         };
-        if (context != null) {
+        if (context != null && listener != null) {
             context.bindService(new Intent(context, USBReaderService.class),
                     con, Service.BIND_AUTO_CREATE);
+            stopReading = false;
         } else {
             throw new NumberFormatException();
         }
     }
 
     public static void unbindService() {
+        stopReading = true;
+
         if (mcontext != null && con != null) {
             mcontext.unbindService(con);
         }
+
+
     }
+
+    private ExecutorService cachedThreadPool;
 
     @Override
     public void onCreate() {
         super.onCreate();
         Log.d(TAG, "onCreate: ");
-
+        cachedThreadPool = Executors.newCachedThreadPool();
         IntentFilter usbFilter = new IntentFilter();
         usbFilter.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED);
         usbFilter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
@@ -105,8 +115,19 @@ public class USBReaderService extends Service {
 
     @Override
     public void onDestroy() {
+        mcontext = null;
+        con = null;
+        if (thread!=null){
+            thread.interrupt();
+            try {
+                thread.stop();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        cachedThreadPool.shutdownNow();
         super.onDestroy();
-        Log.d(TAG, "onDestroy: ");
+        Log.d(TAG, "onDestroy: 0000");
         unregisterReceiver(mUsbPermissionReceiver);
         unregisterReceiver(mUsbReceiver);
         ShowToListener(SERVICE_DESTROY, "读卡服务关闭");
@@ -198,11 +219,18 @@ public class USBReaderService extends Service {
         request.initialize(mDeviceConnection, usbEpIn);
         final ByteBuffer buffer = ByteBuffer.allocate(inMax);
         final ArrayList<Byte> ids = new ArrayList<>();
+        //                                if (sb.length() >= 11) {
+//                                    sb.delete(0, sb.length());
+//                                    buffer.clear();
+//                                }
         Runnable runnable = new Runnable() {
             @Override
             public void run() {
                 while (true) {
                     synchronized (this) {
+                        if (stopReading) {
+                            break;
+                        }
                         request.queue(buffer, inMax);
                         UsbRequest usbRequest = mDeviceConnection.requestWait();
                         if (usbRequest != null) {
@@ -224,7 +252,9 @@ public class USBReaderService extends Service {
                                         Log.e(TAG, "readFromUsb: 收到数据：" + sb.toString() + "   " +
                                                 "长度：" + (ids.size() + 1)
                                                 + "  格式化：" + sb2.toString() + "   长度：" +
-                                                sb2.toString().length());
+                                                sb2.toString().length() + "  " + Thread
+                                                .currentThread()
+                                                .getName());
 
                                         ShowToListener(GET_CARDID, sb2.toString());
 
@@ -236,18 +266,19 @@ public class USBReaderService extends Service {
 //                                    buffer.clear();
 //                                }
                             }
-                        } else {
-                            Log.e(TAG, "run: 数据读取结束");
-                            mDeviceConnection.close();
-                            break;
                         }
                     }
                 }
 
+                mDeviceConnection.close();
+                Log.d(TAG, "run: 数据读取线程结束" + "  " + Thread.currentThread()
+                        .getName());
+
             }
         };
-        mThread = new Thread(runnable);
-        mThread.start();
+        thread = new Thread(runnable);
+
+        cachedThreadPool.execute(thread);
     }
 
     private ServiceListener mListener;
@@ -378,8 +409,8 @@ public class USBReaderService extends Service {
                         == 5050) {
                     Log.e(TAG, "onReceive: 设备移除" + device.toString());
                     ShowToListener(DEVICE_DETACHED, "USB设备移除");
-                    if (mThread != null && mThread.isAlive()) {
-                        mThread.stop();
+                    if (cachedThreadPool != null) {
+                        cachedThreadPool.shutdownNow();
                     }
                 }
             }

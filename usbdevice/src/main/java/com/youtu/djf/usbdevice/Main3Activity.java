@@ -9,6 +9,8 @@ import android.os.IBinder;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
+import com.youtu.djf.utusbreader.USBReaderService;
+
 public class Main3Activity extends AppCompatActivity implements USBReaderService.ServiceListener {
     private static final String TAG = "Main3Activity";
     ServiceConnection conn;
