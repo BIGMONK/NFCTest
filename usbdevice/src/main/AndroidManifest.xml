@@ -6,9 +6,7 @@
     <uses-feature
         android:name="android.hardware.usb.host"
         android:required="true"/>
-
     <uses-permiassion android:name="android.hardware.usb.host"/>
-
     <uses-permission android:name="android.hardware.usb.accessory"/>
     <uses-permission android:name="android.permission.ACCESS_SUPERUSER"/>
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
@@ -22,31 +20,25 @@
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
-
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
 
-            <intent-filter>
-                <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED"/>
-            </intent-filter>
-
-            <meta-data
-                android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED"
-                android:resource="@xml/host_filter"/>
+            <!--<intent-filter>-->
+                <!--<action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED"/>-->
+            <!--</intent-filter>-->
+            <!--<meta-data-->
+                <!--android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED"-->
+                <!--android:resource="@xml/host_filter"/>-->
             <!-- <intent-filter> -->
             <!-- <action android:name="android.hardware.usb.action.USB_ACCESSORY_ATTACHED"/> -->
             <!-- </intent-filter> -->
             <!-- <meta-data -->
             <!-- android:name="android.hardware.usb.action.USB_ACCESSORY_ATTACHED" -->
             <!-- android:resource="@xml/accessory_filter"/> -->
-
         </activity>
-
         <activity android:name=".Main3Activity">
         </activity>
-
         <activity android:name=".Main4Activity">
         </activity>
     </application>
-
 </manifest>

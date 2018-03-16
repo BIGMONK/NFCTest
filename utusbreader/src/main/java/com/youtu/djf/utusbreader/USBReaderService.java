@@ -31,6 +31,8 @@ public class USBReaderService extends Service {
     public static final String ACTION_DEVICE_PERMISSION = "com.youtu.djf.usbdevice.USB_PERMISSION";
     private UsbManager manager;
     private Thread thread;
+    private volatile UsbDeviceConnection mDeviceConnection;
+    private UsbInterface mInterface;
 
     public USBReaderService() {
     }
@@ -40,6 +42,7 @@ public class USBReaderService extends Service {
     private static boolean stopReading;
 
     public static void bindService(Context context, final ServiceListener listener) {
+        Log.d(TAG, "bindService: ");
         mcontext = context;
         con = new ServiceConnection() {
             /**
@@ -61,25 +64,23 @@ public class USBReaderService extends Service {
                 if (service != null) {
                     service.setOnServiceListener(listener);
                     service.getDevice();
+                    Log.d(TAG, "onServiceConnected: " + service.toString());
                 }
             }
         };
         if (context != null && listener != null) {
             context.bindService(new Intent(context, USBReaderService.class),
                     con, Service.BIND_AUTO_CREATE);
-            stopReading = false;
         } else {
             throw new NumberFormatException();
         }
     }
 
     public static void unbindService() {
-        stopReading = true;
-
+        Log.d(TAG, "unbindService: ");
         if (mcontext != null && con != null) {
             mcontext.unbindService(con);
         }
-
 
     }
 
@@ -88,14 +89,14 @@ public class USBReaderService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        Log.d(TAG, "onCreate: ");
+        stopReading = false;
+        Log.d(TAG, "onCreate: "+this.toString());
         cachedThreadPool = Executors.newCachedThreadPool();
         IntentFilter usbFilter = new IntentFilter();
         usbFilter.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED);
         usbFilter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
         mUsbReceiver = new UsbBroadcastReceiver();
         registerReceiver(mUsbReceiver, usbFilter);
-
         mPermissionIntent = PendingIntent.getBroadcast(this, 0, new Intent
                 (ACTION_DEVICE_PERMISSION), 0);
         IntentFilter permissionFilter = new IntentFilter(ACTION_DEVICE_PERMISSION);
@@ -114,22 +115,21 @@ public class USBReaderService extends Service {
     }
 
     @Override
-    public void onDestroy() {
-        mcontext = null;
-        con = null;
-        if (thread!=null){
-            thread.interrupt();
-            try {
-                thread.stop();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+    public void onDestroy() {//
+        stopReading = true;
+        if (mDeviceConnection != null) {
+            if (mInterface!=null)
+            mDeviceConnection.releaseInterface(mInterface);
+            mDeviceConnection.close();
         }
+
         cachedThreadPool.shutdownNow();
-        super.onDestroy();
-        Log.d(TAG, "onDestroy: 0000");
         unregisterReceiver(mUsbPermissionReceiver);
         unregisterReceiver(mUsbReceiver);
+        mcontext = null;
+        con = null;
+        Log.d(TAG, "onDestroy: "+this.toString());
+        super.onDestroy();
         ShowToListener(SERVICE_DESTROY, "读卡服务关闭");
     }
 
@@ -187,14 +187,14 @@ public class USBReaderService extends Service {
 //                    .getInterface(i).toString());
 //        }
         // 打开设备，获取 UsbDeviceConnection 对象，连接设备，用于后面的通讯
-        UsbDeviceConnection mDeviceConnection = manager.openDevice(mUsbDevice);
+        mDeviceConnection = manager.openDevice(mUsbDevice);
         if (mDeviceConnection == null) {
             Log.e(TAG, "getUsbInterface: 设备连接失败");
             ShowToListener(DEVICE_CONNECT_FAILED, "设备连接失败");
             return;
         }
 
-        UsbInterface mInterface = mUsbDevice.getInterface(0);
+        mInterface = mUsbDevice.getInterface(0);
         for (int i = 0; i < mInterface.getEndpointCount(); i++) {
             Log.e(TAG, "getUsbInterface: 端点 " + i + "  " + mInterface.getEndpoint(i).toString());
         }
@@ -207,7 +207,8 @@ public class USBReaderService extends Service {
         } else {
             Log.e(TAG, "onCreate: 找不到设备数据接口");
             ShowToListener(GOT_DEVICE_DATA_INTER_NULL, "找不到设备数据接口");
-            mDeviceConnection.close();
+            if (mDeviceConnection != null)
+                mDeviceConnection.close();
         }
     }
 
