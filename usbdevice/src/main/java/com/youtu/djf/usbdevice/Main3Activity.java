@@ -14,6 +14,7 @@ import com.youtu.djf.utusbreader.USBReaderService;
 public class Main3Activity extends AppCompatActivity implements USBReaderService.ServiceListener {
     private static final String TAG = "Main3Activity";
     ServiceConnection conn;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -27,6 +28,7 @@ public class Main3Activity extends AppCompatActivity implements USBReaderService
              */
             @Override
             public void onServiceDisconnected(ComponentName name) {
+                Log.d(TAG, "onServiceDisconnected: ");
             }
 
             /**
@@ -35,7 +37,7 @@ public class Main3Activity extends AppCompatActivity implements USBReaderService
             @Override
             public void onServiceConnected(ComponentName name, IBinder binder) {
                 USBReaderService service = ((USBReaderService.USBReaderBinder) binder).getService();
-                if (service!=null){
+                if (service != null) {
                     service.setOnServiceListener(Main3Activity.this);
                     service.getDevice();
                 }
@@ -54,6 +56,7 @@ public class Main3Activity extends AppCompatActivity implements USBReaderService
 
     @Override
     public void onServiceListen(int flag, String msg) {
-        Log.d(TAG, "onServiceListen: "+flag+"   "+msg+"  "+ Thread.currentThread().getName());
+        Log.d(TAG, "onServiceListen: " + flag + "   " + msg + "  " + Thread.currentThread()
+                .getName());
     }
 }

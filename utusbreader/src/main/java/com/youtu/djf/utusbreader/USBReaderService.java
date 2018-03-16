@@ -61,10 +61,10 @@ public class USBReaderService extends Service {
             public void onServiceConnected(ComponentName name, IBinder binder) {
                 USBReaderService service = ((USBReaderService.USBReaderBinder) binder)
                         .getService();
+                Log.d(TAG, "onServiceConnected: " + service.toString());
                 if (service != null) {
                     service.setOnServiceListener(listener);
                     service.getDevice();
-                    Log.d(TAG, "onServiceConnected: " + service.toString());
                 }
             }
         };
@@ -90,7 +90,7 @@ public class USBReaderService extends Service {
     public void onCreate() {
         super.onCreate();
         stopReading = false;
-        Log.d(TAG, "onCreate: "+this.toString());
+        Log.d(TAG, "onCreate: " + this.toString());
         cachedThreadPool = Executors.newCachedThreadPool();
         IntentFilter usbFilter = new IntentFilter();
         usbFilter.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED);
@@ -118,8 +118,8 @@ public class USBReaderService extends Service {
     public void onDestroy() {//
         stopReading = true;
         if (mDeviceConnection != null) {
-            if (mInterface!=null)
-            mDeviceConnection.releaseInterface(mInterface);
+            if (mInterface != null)
+                mDeviceConnection.releaseInterface(mInterface);
             mDeviceConnection.close();
         }
 
@@ -128,7 +128,7 @@ public class USBReaderService extends Service {
         unregisterReceiver(mUsbReceiver);
         mcontext = null;
         con = null;
-        Log.d(TAG, "onDestroy: "+this.toString());
+        Log.d(TAG, "onDestroy:读卡服务关闭 " + this.toString());
         super.onDestroy();
         ShowToListener(SERVICE_DESTROY, "读卡服务关闭");
     }
@@ -152,18 +152,18 @@ public class USBReaderService extends Service {
             HashMap<String, UsbDevice> deviceList = manager.getDeviceList();
             for (String s : deviceList.keySet()) {
                 UsbDevice usbDevice = deviceList.get(s);
-                Log.e(TAG, "UsbDevice: " + usbDevice.toString());
+                Log.d(TAG, "getDevice: "+ usbDevice.toString());
                 //获取设备接口
                 if (usbDevice.getVendorId() == 5050 && usbDevice.getProductId() == 24) {
-                    Log.e(TAG, "onCreate: 发现设备");
+                    Log.d(TAG, "getDevice: 发现设备");
                     ShowToListener(GOT_DEVICE, "找到指定设备");
                     // 判断是否有权限
                     if (manager.hasPermission(usbDevice)) {
-                        Log.e(TAG, "onCreate: 拥有权限");
+                        Log.d(TAG, "getDevice:  拥有权限");
                         ShowToListener(HAS_PERMISSION, "拥有设备访问权限");
                         getUsbInterface(usbDevice);
                     } else {
-                        Log.e(TAG, "onCreate: 没有权限,准备申请权限");
+                        Log.d(TAG, "getDevice:  没有权限,准备申请权限");
                         ShowToListener(HAS_NO_PERSSION, "没有设备访问权限");
                         manager.requestPermission(usbDevice, mPermissionIntent);
                     }
@@ -181,7 +181,6 @@ public class USBReaderService extends Service {
     private void getUsbInterface(UsbDevice mUsbDevice) {
         Log.e(TAG, "getUsbInterface:++++++++++++++++++++++++++++++++++++++ ");
         Log.e(TAG, "getUsbInterface: 获取设备数据接口：设备" + mUsbDevice.toString());
-//
 //        for (int i = 0; i < mUsbDevice.getInterfaceCount(); i++) {
 //            Log.e(TAG, "getUsbInterface: 接口 " +i+"  "+ mUsbDevice
 //                    .getInterface(i).toString());
@@ -201,11 +200,11 @@ public class USBReaderService extends Service {
         //用UsbDeviceConnection 与 UsbInterface 进行端点设置和通讯
         UsbEndpoint usbEpIn = mInterface.getEndpoint(0);
         if (mDeviceConnection.claimInterface(mInterface, true)) {
-            Log.e(TAG, "onCreate: 找到设备数据接口");
+            Log.d(TAG, "getUsbInterface: 找到设备数据接口");
             ShowToListener(GOT_DEVICE_DATA_INTER, "找到设备数据接口");
             readFromUsb(usbEpIn, mDeviceConnection);
         } else {
-            Log.e(TAG, "onCreate: 找不到设备数据接口");
+            Log.d(TAG, "getUsbInterface:  找不到设备数据接口");
             ShowToListener(GOT_DEVICE_DATA_INTER_NULL, "找不到设备数据接口");
             if (mDeviceConnection != null)
                 mDeviceConnection.close();
@@ -278,7 +277,6 @@ public class USBReaderService extends Service {
             }
         };
         thread = new Thread(runnable);
-
         cachedThreadPool.execute(thread);
     }
 
