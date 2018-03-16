@@ -33,15 +33,26 @@ public class USBReaderService extends Service {
     private Thread thread;
     private volatile UsbDeviceConnection mDeviceConnection;
     private UsbInterface mInterface;
-
+    private static volatile USBReaderService mInstance;
     public USBReaderService() {
     }
 
-    private static ServiceConnection con;
-    private static Context mcontext;
-    private static boolean stopReading;
+    public static USBReaderService getmInstance() {
+        if (mInstance==null){
+            synchronized (USBReaderService.class){
+                if (mInstance==null){
+                    mInstance=new USBReaderService();
+                }
+            }
+        }
+        return mInstance;
+    }
 
-    public static void bindService(Context context, final ServiceListener listener) {
+    private  ServiceConnection con;
+    private  Context mcontext;
+    private  boolean stopReading;
+
+    public  void bindService(Context context, final ServiceListener listener) {
         Log.d(TAG, "bindService: ");
         mcontext = context;
         con = new ServiceConnection() {
@@ -76,7 +87,7 @@ public class USBReaderService extends Service {
         }
     }
 
-    public static void unbindService() {
+    public  void unbindService() {
         Log.d(TAG, "unbindService: ");
         if (mcontext != null && con != null) {
             mcontext.unbindService(con);

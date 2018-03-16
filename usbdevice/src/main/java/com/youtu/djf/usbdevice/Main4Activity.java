@@ -14,13 +14,13 @@ public class Main4Activity extends AppCompatActivity implements USBReaderService
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main4);
 
-        USBReaderService.bindService(this, this);
+        USBReaderService.getmInstance().bindService(this, this);
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        USBReaderService.unbindService();
+        USBReaderService.getmInstance().unbindService();
     }
 
     @Override
